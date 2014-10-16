@@ -3,10 +3,15 @@ package lmx.phone.esper;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import lmx.phone.domain.DJSystem;
-import lmx.phone.domain.Record;
+import lmx.phone.domain.PhoneResult;
+import lmx.phone.domain.Phone;
 import lmx.phone.epl.Epl;
 import lmx.phone.listener.PayRecListerner;
 import lmx.phone.util.FileHandler;
@@ -19,15 +24,24 @@ import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 
 public class EsperPart {
+	private final static Logger logger = Logger.getLogger(EsperPart.class);
+	
 	public static EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider();
 	public static EPAdministrator admin = epService.getEPAdministrator();
 	public static EPRuntime runtime = epService.getEPRuntime();
 
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
+	// phoneList is the data stored in memory
+	public static List<Phone> phoneList = new ArrayList<Phone>();
+	
+	// result is the result produced by esper
+	public static List<PhoneResult> result = new ArrayList<PhoneResult>();
+	
 	public static void runEsper() throws Exception{
+		RandomAccessFile raf = RadAccFileUtil.getFileHander();
+		logger.info("phone esper is running");
 		while(DJSystem.isWoriking) {
-			RandomAccessFile raf = RadAccFileUtil.getFileHander();
 			// if new record is not handled
 			if(RadAccFileUtil.isDealed == false || RadAccFileUtil.readedOffset < raf.length()) {
 				System.out.println("|| readed line length: " + RadAccFileUtil.readedOffset);
@@ -36,20 +50,30 @@ public class EsperPart {
 					raf.seek(RadAccFileUtil.readedOffset);
 					int allLength = (int) raf.length();
 					while(RadAccFileUtil.readedOffset < allLength) {
-						raf.seek(RadAccFileUtil.readedOffset+1);
+						raf.seek(RadAccFileUtil.readedOffset);
 						String line = raf.readLine();
 						System.out.println("|| line is : "+line);
 						System.out.println("|| line length is : "+line.length());
-						RadAccFileUtil.readedOffset += line.length()+1;
+						RadAccFileUtil.readedOffset += line.length()+2;
 						dealLineData(line);
 					}
 					RadAccFileUtil.isDealed = true;
 					RadAccFileUtil.readedLength = raf.length();
+					System.out.println("##:" + phoneList.size());
+					System.out.println("##:" + result.size());
 				} catch (IOException e) {
-					
+					throw e;
 				}
 			}
 		}
+	}
+	
+	/**
+	 * stop esper and abandon file resource
+	 */
+	public static void stop() throws Exception{
+		DJSystem.isWoriking = false;
+		RadAccFileUtil.getFileHander().close();
 	}
 	
 	/**
@@ -93,7 +117,7 @@ public class EsperPart {
 	/**
 	 * initialize the environment of Esper
 	 */
-	public static void initEsper() {
+	private static void initEsper() {
 		admin.createEPL(Epl.ctxCreate);
 		EPStatement showState = admin.createEPL(Epl.ctxSelect);
 		EPStatement insertState = admin.createEPL(Epl.insertAvg);
@@ -111,11 +135,12 @@ public class EsperPart {
 	 */
 	private static void dealLineData(String line) throws Exception {
 		String[] datas = line.split("#");
-		runtime.sendEvent(new Record(datas[0],datas[1],
+		runtime.sendEvent(new Phone(datas[0],datas[1],
 				Integer.valueOf(datas[2]), sdf.parse(datas[3])));
 	}
 	
 	public static void main(String[] args) throws Exception{
+		System.out.println("esper starting");
 		EsperPart.init();
 		EsperPart.runEsper();
 	}

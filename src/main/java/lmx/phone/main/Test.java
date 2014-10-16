@@ -1,6 +1,7 @@
 package lmx.phone.main;
 
-import lmx.phone.esper.EsperPart;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -12,7 +13,14 @@ import lmx.phone.esper.EsperPart;
 public class Test {
 
 	public static void main(String[] args) throws Exception {
-		EsperPart.runEsper();
+//		EsperPart.runEsper();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("success", true);
+		map.put("data", "huhuh");
+		map.put("message", "result");
+//		"{"success":true,"data":"huhuh","message":"result"}"
+		System.out.println(map);
+		
 	}
 
 }

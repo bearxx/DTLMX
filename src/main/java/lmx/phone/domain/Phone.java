@@ -1,25 +1,31 @@
 package lmx.phone.domain;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import lmx.phone.esper.EsperPart;
-import lmx.phone.util.FileHandler;
-import lmx.phone.util.RadAccFileUtil;
 
 /**
  * The records of payment
  * @author MiXian
  *
  */
-public class Record {
+public class Phone {
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	private String id;
 	private String user;
 	private int payment;
 	private Date timestamp;
 	
-	public Record(String id, String user, int payment, Date timestamp) {
+	public Phone(String id, String user, String payment, String timestamp) {
+		this.id = id;
+		this.user = user;
+		this.payment = Integer.valueOf(payment);
+	}
+	
+	public Phone(String id, String user, int payment, Date timestamp)  {
 		this.id = id;
 		this.user = user;
 		this.payment = payment;
@@ -55,12 +61,12 @@ public class Record {
 	 * create test data
 	 * @return
 	 */
-	public static Record[] getTestRecords() {
-		Record[] records = new Record[100];
+	public static Phone[] getTestRecords() {
+		Phone[] records = new Phone[100];
 		for(int i=0; i<99; i++) {
-			records[i] = new Record("0000"+i%2,"admin",58,new Date());
+			records[i] = new Phone("0000"+i%2,"admin",58,new Date());
 		}
-		records[99] = new Record("00001","admin",10,new Date());
+		records[99] = new Phone("00001","admin",10,new Date());
 		return records;
 	}
 	
