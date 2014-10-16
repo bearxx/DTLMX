@@ -20,36 +20,16 @@ Ext.define('djlmx.view.phone.PhoneView',{
 		cls : 'x-panel-header',
 		layout : 'column',
 		items : [  {
-            text : '添加',
+            text : '初始化Phone服务',
             xtype : 'button',
             iconCls : 'tab-add-icon',
-            tooltip : '添加'
+            tooltip : '初始化所需资源'
         }, '-', {
-            text : '删除',
+            text : '终止Phone服务',
             xtype : 'button',
             iconCls : 'tab-remove-icon',
-            tooltip : '删除'
-        },  '-', {
-			labelAlign : 'right',
-			fieldLabel : '输入查询code',
-			itemId : 'code',
-			text : 'codetext',
-			xtype : 'textfield',
-			tooltip : 'code'
-		},'-', {
-			fieldLabel : '填入查询内容',
-			labelAlign : 'right',
-			itemId : 'name',
-			text : 'nametext',
-			xtype : 'textfield',
-			tooltip : 'name'
-		}, '-', {
-			xtype : 'button',
-			iconCls : 'search-icon',
-			tooltip : 'search',
-			action : 'case-search',
-
-		} ]
+            tooltip : '终止Phone服务，并释放相关资源'
+        }]
 	
     }
 });
