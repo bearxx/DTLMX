@@ -26,9 +26,13 @@ import com.espertech.esper.client.EPStatement;
 public class EsperPart {
 	private final static Logger logger = Logger.getLogger(EsperPart.class);
 	
-	public static EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider();
-	public static EPAdministrator admin = epService.getEPAdministrator();
-	public static EPRuntime runtime = epService.getEPRuntime();
+	private static EPServiceProvider epService = EPServiceProviderManager.getDefaultProvider();
+	private static EPAdministrator admin = epService.getEPAdministrator();
+	private static EPRuntime runtime = epService.getEPRuntime();
+
+	private static EPStatement showState;
+	private static EPStatement insertState;
+	private static EPStatement triState;
 
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
@@ -38,10 +42,14 @@ public class EsperPart {
 	// result is the result produced by esper
 	public static List<PhoneResult> result = new ArrayList<PhoneResult>();
 	
+	public static boolean isReady = false;
+	
 	public static void runEsper() throws Exception{
 		RandomAccessFile raf = RadAccFileUtil.getFileHander();
 		logger.info("phone esper is running");
+		isReady = true;
 		while(DJSystem.isWoriking) {
+			System.out.println("working");
 			// if new record is not handled
 			if(RadAccFileUtil.isDealed == false || RadAccFileUtil.readedOffset < raf.length()) {
 				System.out.println("|| readed line length: " + RadAccFileUtil.readedOffset);
@@ -62,7 +70,7 @@ public class EsperPart {
 					System.out.println("##:" + phoneList.size());
 					System.out.println("##:" + result.size());
 				} catch (IOException e) {
-					throw e;
+//					throw e;
 				}
 			}
 		}
@@ -72,6 +80,9 @@ public class EsperPart {
 	 * stop esper and abandon file resource
 	 */
 	public static void stop() throws Exception{
+		showState.stop();
+		insertState.stop();
+		triState.stop();
 		DJSystem.isWoriking = false;
 		RadAccFileUtil.getFileHander().close();
 	}
@@ -119,13 +130,17 @@ public class EsperPart {
 	 */
 	private static void initEsper() {
 		admin.createEPL(Epl.ctxCreate);
-		EPStatement showState = admin.createEPL(Epl.ctxSelect);
-		EPStatement insertState = admin.createEPL(Epl.insertAvg);
-		EPStatement triState = admin.createEPL(Epl.triggerAlert);
+		showState = admin.createEPL(Epl.ctxSelect);
+		insertState = admin.createEPL(Epl.insertAvg);
+		triState = admin.createEPL(Epl.triggerAlert);
 		
 		showState.addListener(PayRecListerner.getShowListener());
 		insertState.addListener(PayRecListerner.getAvgListener());
 		triState.addListener(PayRecListerner.getTriggerListener());
+
+		showState.start();
+		insertState.start();
+		triState.start();
 	}
 	
 	/**

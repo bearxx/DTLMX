@@ -1,7 +1,5 @@
 package lmx.phone.domain;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import lmx.phone.esper.EsperPart;
@@ -12,7 +10,6 @@ import lmx.phone.esper.EsperPart;
  *
  */
 public class Phone {
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	private String id;
 	private String user;
