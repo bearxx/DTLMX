@@ -68,9 +68,9 @@ public class Phone {
 	}
 	
 	public static void main(String[] s) throws Exception {
-		EsperPart.addRealRecord("123","u1",90);
-		EsperPart.addRealRecord("124","u2",40);
-		EsperPart.addRealRecord("125","u2",40);
+		EsperPart.addRealRecordToFile("123","u1",90);
+		EsperPart.addRealRecordToFile("124","u2",40);
+		EsperPart.addRealRecordToFile("125","u2",40);
 	}
 
 	

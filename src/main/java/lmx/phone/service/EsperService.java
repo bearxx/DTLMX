@@ -41,7 +41,7 @@ public class EsperService {
 			};				
 			startPhoneEsper.start();
 			while(EsperPart.isReady == false) {
-				//waiting ...
+				Thread.sleep(100);
 			}
 		}catch(Exception e) {
 			logger.error(e);
@@ -57,7 +57,7 @@ public class EsperService {
 			final @QueryParam("user") String user,
 			final @QueryParam("payment") String payment) throws Exception{
 		logger.info("[new event]");
-		EsperPart.addRealRecord(id, user, Integer.valueOf(payment));
+		EsperPart.addRealRecordToFile(id, user, Integer.valueOf(payment));
 		return ExtJSResponse.successResWithData(EsperPart.phoneList);
 	}
 	
@@ -73,6 +73,16 @@ public class EsperService {
 			throw(e);
 		}
 		return ExtJSResponse.successResWithData(true);
+	}
+	
+	@Path("result")
+	@GET
+	public ExtJSResponse getResult() throws Exception{
+		while(EsperPart.isNewRes == false){
+			Thread.sleep(100);
+		};
+		EsperPart.isNewRes = false;
+		return ExtJSResponse.successResWithData(EsperPart.result);
 	}
 	
 	@Path("zyz")

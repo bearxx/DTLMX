@@ -1,6 +1,7 @@
 Ext.define('djlmx.controller.phone.PhoneController', {
   extend : 'Ext.app.Controller',
   views : [ 'phone.PhoneView'],
+  idWorking : false,
   init : function() {
     this.control({
         'phoneView': {
@@ -19,6 +20,7 @@ Ext.define('djlmx.controller.phone.PhoneController', {
   },
   
   initPhoneService : function(btn, e) {
+	  var me = this;
 	  Ext.Ajax.request({
 		  url : 'rest/esper/startPhone',
 		  success : function(respText) {
@@ -30,9 +32,37 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 				  btn.up('toolbar').down('button[iconCls=tab-remove-icon]').enable();
 				  btn.up('phoneView').down('panel[itemId=input_panel]')
 				  		.down('button').enable();
+				  me.isWorking = true;
+				  me.waitForRes(btn);
 			  } else {
 				  Ext.Msg.alert('tip', 'internal error');
 			  }
+		  }
+	  });
+  },
+  
+  waitForRes : function(btn) {
+	  var me = this;
+	  Ext.Ajax.request({
+		  url : 'rest/esper/result',
+		  method : 'GET',
+		  timeout : 60000,
+		  success : function(resp) {
+			  if(me.isWorking) {	
+				  var result = Ext.decode(resp.responseText).data[0];
+				  var resField = btn.up('phoneView').down('panel[itemId=result_panel]').down('textfield');
+				  var resString = 'User: ' + result.user + '{id:[' + result.id + ']} '
+				  		+ 'paid ' + result.newPayment
+				  		+ ', average paid last 3 time is: ' + result.avgPayment;
+				  console.log(resString);
+				  console.log(result);
+				  resField.setValue(resString);
+				  me.waitForRes(btn);
+			  }
+		  },
+		  failure : function() {
+			  console.log('reConnect need');
+			  me.waitForRes(btn);
 		  }
 	  });
   },
@@ -54,6 +84,7 @@ Ext.define('djlmx.controller.phone.PhoneController', {
   },
   
   stopPhoneService : function(btn, e) {
+	  var me = this;
 	  Ext.Ajax.request({
 		  url : 'rest/esper/stopPhone',
 		  success : function(respText) {
@@ -65,6 +96,7 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 				  btn.up('toolbar').down('button[iconCls=tab-add-icon]').enable();
 				  btn.up('phoneView').down('panel[itemId=input_panel]')
 			  		.down('button').enable();
+				  me.isWorking = false;
 			  } else {
 				  Ext.Msg.alert('tip', 'internal error');
 			  }
@@ -74,6 +106,5 @@ Ext.define('djlmx.controller.phone.PhoneController', {
   },
  
   onTreeRender : function (view) {
-	  
   },
 });

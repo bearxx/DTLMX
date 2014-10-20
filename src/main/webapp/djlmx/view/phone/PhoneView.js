@@ -35,6 +35,7 @@ Ext.define('djlmx.view.phone.PhoneView',{
 	    	xtype : 'panel',
 	    	layout : 'fit',
 	    	height : 90,
+	    	itemId : 'result_panel',
 	    	align : 'center',
 	    	items : [{
 	    		xtype : 'textfield',

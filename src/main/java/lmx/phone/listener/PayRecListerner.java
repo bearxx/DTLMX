@@ -55,6 +55,7 @@ public class PayRecListerner {
 							+ ": " + newEs[i].get("newPay") + ": " + newEs[i].get("avgPayment"));
 					res.add( new PhoneResult((String)newEs[i].get("id"), (String)newEs[i].get("user"),
 							String.valueOf(newEs[i].get("newPay")), String.valueOf(newEs[i].get("avgPayment"))) );
+					EsperPart.isNewRes = true;
 				}
 				EsperPart.result = res;
 			}
