@@ -5,7 +5,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Application;
 import javax.ws.rs.core.MediaType;
 
 import lmx.phone.esper.EsperPart;
@@ -85,10 +84,10 @@ public class EsperService {
 		return ExtJSResponse.successResWithData(EsperPart.result);
 	}
 	
-	@Path("zyz")
+	@Path("status")
 	@GET
-	public void testZYZ() {
-		System.out.println("zyz is a man");
+	public ExtJSResponse getEsperStatus() {
+		return ExtJSResponse.successResWithKeyValue("isRunning", EsperPart.isReady);
 	}
 
 }

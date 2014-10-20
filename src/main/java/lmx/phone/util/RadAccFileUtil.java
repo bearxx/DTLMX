@@ -5,17 +5,31 @@ import java.io.RandomAccessFile;
 
 public class RadAccFileUtil {
 	
+	/**
+	 * The handler of randAccessFile
+	 */
 	private static RandomAccessFile raf = null;
-	public static long readedOffset = 0;
-	public static long readedLength = 0;
-	public static boolean isDealed = true;
+	/**
+	 * The offset already read by esper
+	 */
+	public static long readOffset = 0;
+	/**
+	 * Whether new record is dealt by esper
+	 */
+	public static boolean isDealt = true;
+	
+	/**
+	 * Whether the connection and resources are closed
+	 */
+	public static boolean isClosed = true;
 	
 	/**
 	 * get RandomAccessFile to handle the file 'data.txt'
 	 * @return
 	 */
 	public static RandomAccessFile getFileHander() {
-		if(raf == null) {
+		if(raf == null || isClosed == true) {
+			System.out.println("++++  null and return new");
 			synchronized(RadAccFileUtil.class) {
 				try {
 					raf = new RandomAccessFile("data.txt","rw");

@@ -71,7 +71,8 @@ Ext.define('djlmx.view.phone.PhoneView',{
             text : '终止Phone服务',
             xtype : 'button',
             iconCls : 'tab-remove-icon',
-            tooltip : '终止Phone服务，并释放相关资源'
+            tooltip : '终止Phone服务，并释放相关资源',
+            disabled : true
         }]
 	
     }

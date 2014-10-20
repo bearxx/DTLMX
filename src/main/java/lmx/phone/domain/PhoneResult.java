@@ -1,6 +1,13 @@
 package lmx.phone.domain;
 
+/**
+ * This is what is discovered by esper,
+ * and how they are stored in the stream
+ * @author MiXian
+ *
+ */
 public class PhoneResult {
+	
 	private String id;
 	private String user;
 	private String newPayment;
@@ -39,6 +46,9 @@ public class PhoneResult {
 		this.avgPayment = avgPayment;
 	}
 	
+	public String toString() {
+		return "PhoneResult :[id:"+id+" ,name:"+user+" ,last paid:"+newPayment+" ,average in last 3 payments:"+avgPayment+"]";
+	}
 	
 
 }

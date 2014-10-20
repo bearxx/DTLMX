@@ -24,7 +24,6 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 	  Ext.Ajax.request({
 		  url : 'rest/esper/startPhone',
 		  success : function(respText) {
-			  console.log(respText.responseText);
 			  var res = Ext.JSON.decode(respText.responseText).success;
 			  if(res != null) {
 				  Ext.Msg.alert('tip', 'success');
@@ -54,14 +53,11 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 				  var resString = 'User: ' + result.user + '{id:[' + result.id + ']} '
 				  		+ 'paid ' + result.newPayment
 				  		+ ', average paid last 3 time is: ' + result.avgPayment;
-				  console.log(resString);
-				  console.log(result);
 				  resField.setValue(resString);
 				  me.waitForRes(btn);
 			  }
 		  },
 		  failure : function() {
-			  console.log('reConnect need');
 			  me.waitForRes(btn);
 		  }
 	  });
@@ -95,7 +91,7 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 				  btn.disable();
 				  btn.up('toolbar').down('button[iconCls=tab-add-icon]').enable();
 				  btn.up('phoneView').down('panel[itemId=input_panel]')
-			  		.down('button').enable();
+			  		.down('button').disable();
 				  me.isWorking = false;
 			  } else {
 				  Ext.Msg.alert('tip', 'internal error');
@@ -106,5 +102,18 @@ Ext.define('djlmx.controller.phone.PhoneController', {
   },
  
   onTreeRender : function (view) {
+	  var status = null;
+	  Ext.Ajax.request({
+		  url : 'rest/esper/status',
+		  method: 'GET',
+		  success : function(resp) {
+			  var isRunning = Ext.decode(resp.responseText).isRunning;
+			  if(isRunning == true) {
+				  view.down('button[iconCls=tab-add-icon]').disable();
+				  view.down('button[iconCls=tab-remove-icon]').enable();
+				  view.down('panel[itemId=input_panel]').down('button').enable();
+			  }
+		  }
+	  });
   },
 });

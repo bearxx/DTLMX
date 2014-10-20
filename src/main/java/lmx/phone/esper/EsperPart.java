@@ -1,5 +1,8 @@
 package lmx.phone.esper;
 
+/**
+ * core function implementation of esper service.
+ */
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
@@ -9,7 +12,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import lmx.phone.domain.DJSystem;
+import lmx.phone.domain.EsperStatus;
 import lmx.phone.domain.PhoneResult;
 import lmx.phone.domain.Phone;
 import lmx.phone.epl.Epl;
@@ -23,7 +26,6 @@ import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 
 public class EsperPart {
-	private final static Logger logger = Logger.getLogger(EsperPart.class);
 	/**
 	 * the next six static fields are what is used by esper
 	 */
@@ -33,8 +35,8 @@ public class EsperPart {
 	private static EPStatement showState;
 	private static EPStatement insertState;
 	private static EPStatement triState;
+	private static EPStatement payCtxState;
 
-	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	/**
 	 *  phoneList is the data stored in memory
@@ -58,26 +60,34 @@ public class EsperPart {
 	 */
 	public static boolean isReady = false;
 	
+
+	private final static Logger logger = Logger.getLogger(EsperPart.class);
+	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
+	/**
+	 * Running and waiting for the new event.
+	 * If data.txt changes, this will find out the new events and send it to runtime of esper.
+	 * @throws Exception
+	 */
 	public static void runEsper() throws Exception{
 		RandomAccessFile raf = RadAccFileUtil.getFileHander();
 		logger.info("phone esper is running");
 		isReady = true;
-		while(DJSystem.isWoriking) {
+		// the system is working
+		while(EsperStatus.isWoriking) {
 			Thread.sleep(100);
 			// if new record is not handled
-			if(RadAccFileUtil.isDealed == false) {
-				System.out.println("|| readed line length: " + RadAccFileUtil.readedOffset);
-				System.out.println("|| file length : " + raf.length());
+			if(RadAccFileUtil.isDealt == false) {
 				try {
 					int allLength = (int) raf.length();
-					while(RadAccFileUtil.readedOffset < allLength) {
-						raf.seek(RadAccFileUtil.readedOffset);
+					// find out all events in data.txt
+					while(RadAccFileUtil.readOffset < allLength) {
+						raf.seek(RadAccFileUtil.readOffset);
 						String line = raf.readLine();
-						RadAccFileUtil.readedOffset += line.length()+2;
+						RadAccFileUtil.readOffset += line.length()+2;
 						dealLineData(line);
 					}
-					RadAccFileUtil.isDealed = true;
-					RadAccFileUtil.readedLength = raf.length();
+					RadAccFileUtil.isDealt = true;
 				} catch (IOException e) {
 //					throw e;
 				}
@@ -86,23 +96,8 @@ public class EsperPart {
 	}
 	
 	/**
-	 * stop esper and abandon file resource
-	 */
-	public static void stop() throws Exception{
-		showState.destroy();
-		insertState.destroy();
-		triState.destroy();
-//		runtime.
-//		admin.stopAllStatements();
-//		admin.
-//		epService.removeAllStatementStateListeners();
-		DJSystem.isWoriking = false;
-		isReady = false;
-		RadAccFileUtil.getFileHander().close();
-	}
-	
-	/**
-	 * add records to file, this will not send the event to runtime.
+	 * Add records to file, this will not send the event to runtime,
+	 * just change the data.txt and the changes will be discovered by function: <i>runEsper</i>
 	 * 
 	 * @param id
 	 * @param user
@@ -116,53 +111,13 @@ public class EsperPart {
 		RandomAccessFile raf = RadAccFileUtil.getFileHander();
 		try {
 			System.out.println(raf.length());
-			raf.seek(RadAccFileUtil.readedOffset);
+			raf.seek(RadAccFileUtil.readOffset);
 			raf.write(dataStr.getBytes());
-			RadAccFileUtil.isDealed = false;
+			RadAccFileUtil.isDealt = false;
 		} catch(Exception e) {
 			logger.error("Write file exception");
 			throw(e);
 		}
-	}
-	
-	/**
-	 * initialize all need to run the system
-	 * @throws Exception
-	 */
-	public static void init() throws Exception {
-		// init the esper environment
-		initEsper();
-		// deal with the data that is already in data.txt
-		RandomAccessFile raf = RadAccFileUtil.getFileHander();
-		if(raf.length() > 2) {
-			while(raf.getFilePointer() < raf.length()) {
-				String line = raf.readLine();
-				dealLineData(line);
-				logger.info("Already happened event in file : " + line);
-				RadAccFileUtil.readedOffset += line.length()+2;
-				raf.seek(RadAccFileUtil.readedOffset);
-			}			
-		}
-		RadAccFileUtil.isDealed = true;
-		RadAccFileUtil.readedLength = RadAccFileUtil.readedOffset = raf.length();
-	}
-	
-	/**
-	 * initialize the environment of Esper
-	 */
-	private static void initEsper() {
-		admin.createEPL(Epl.ctxCreate);
-		showState = admin.createEPL(Epl.ctxSelect);
-		insertState = admin.createEPL(Epl.insertAvg);
-		triState = admin.createEPL(Epl.triggerAlert);
-		
-		showState.addListener(PayRecListerner.getShowListener());
-		insertState.addListener(PayRecListerner.getAvgListener());
-		triState.addListener(PayRecListerner.getTriggerListener());
-
-		showState.start();
-		insertState.start();
-		triState.start();
 	}
 	
 	/**
@@ -176,13 +131,59 @@ public class EsperPart {
 				Integer.valueOf(datas[2]), sdf.parse(datas[3])));
 	}
 	
-	public static void main(String[] args) throws Exception{
-		System.out.println("esper starting");
-		EsperPart.init();
-		EsperPart.runEsper();
-		Thread.sleep(3000);
-		addRealRecordToFile("1", "u", 1000);
-		addRealRecordToFile("1", "u", 1001);
-		addRealRecordToFile("1", "u", 1003);
+	/**
+	 * stop esper and abandon file resource
+	 */
+	public static void stop() throws Exception{
+		logger.info("Begin to stop the esper service.");
+		payCtxState.destroy();
+		showState.destroy();
+		insertState.destroy();
+		triState.destroy();
+		EsperStatus.isWoriking = false;
+		isReady = false;
+		RadAccFileUtil.getFileHander().close();
+		RadAccFileUtil.isClosed = true;
+		logger.info("Esper service stopped.");
 	}
+	
+	/**
+	 * initialize all need to run the system
+	 * @throws Exception
+	 */
+	public static void init() throws Exception {
+		// init the esper environment
+		initEsper();
+		logger.info("Esper service part initialled");
+		// deal with the data that is already in data.txt
+		RandomAccessFile raf = RadAccFileUtil.getFileHander();
+		RadAccFileUtil.isClosed = false;
+		if(raf.length() > 2) {
+			while(raf.getFilePointer() < raf.length()) {
+				String line = raf.readLine();
+				dealLineData(line);
+				RadAccFileUtil.readOffset += line.length()+2;
+				raf.seek(RadAccFileUtil.readOffset);
+			}			
+		}
+		RadAccFileUtil.isDealt = true;
+		RadAccFileUtil.readOffset = raf.length();
+	}
+	
+	/**
+	 * initialize the environment of Esper
+	 */
+	private static void initEsper() {
+		payCtxState = admin.createEPL(Epl.ctxCreate);
+		showState = admin.createEPL(Epl.ctxSelect);
+		insertState = admin.createEPL(Epl.insertAvg);
+		triState = admin.createEPL(Epl.triggerAlert);
+		showState.addListener(PayRecListerner.getShowListener());
+		insertState.addListener(PayRecListerner.getAvgListener());
+		triState.addListener(PayRecListerner.getTriggerListener());
+		showState.start();
+		insertState.start();
+		triState.start();
+	}
+	
 }

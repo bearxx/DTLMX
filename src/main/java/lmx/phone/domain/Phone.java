@@ -2,16 +2,19 @@ package lmx.phone.domain;
 
 import java.util.Date;
 
-import lmx.phone.esper.EsperPart;
-
 /**
- * The records of payment
+ * The records of payment.
+ * It works as the event stream in real world,
+ * imitating a user in the system of purchasing services
  * @author MiXian
  *
  */
 public class Phone {
-	
 	private String id;
+	/**
+	 * this is just a name, nothing more.
+	 * id is the real identifier.
+	 */
 	private String user;
 	private int payment;
 	private Date timestamp;
@@ -53,26 +56,10 @@ public class Phone {
 	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
 	}
-
-	/**
-	 * create test data
-	 * @return
-	 */
-	public static Phone[] getTestRecords() {
-		Phone[] records = new Phone[100];
-		for(int i=0; i<99; i++) {
-			records[i] = new Phone("0000"+i%2,"admin",58,new Date());
-		}
-		records[99] = new Phone("00001","admin",10,new Date());
-		return records;
-	}
 	
-	public static void main(String[] s) throws Exception {
-		EsperPart.addRealRecordToFile("123","u1",90);
-		EsperPart.addRealRecordToFile("124","u2",40);
-		EsperPart.addRealRecordToFile("125","u2",40);
+	public String toString() {
+		return "Phone:[id:"+id+" ,name:"+user+" ,last paid:"+payment+" ,time:"+timestamp+"]";
 	}
 
-	
 }
  
