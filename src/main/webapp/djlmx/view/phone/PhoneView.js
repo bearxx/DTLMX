@@ -62,7 +62,7 @@ Ext.define('djlmx.view.phone.PhoneView',{
     	xtype : 'toolbar',
 		cls : 'x-panel-header',
 		layout : 'column',
-		items : [  {
+		items : [{
             text : '初始化Phone服务',
             xtype : 'button',
             iconCls : 'tab-add-icon',

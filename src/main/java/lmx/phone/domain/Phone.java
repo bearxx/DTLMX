@@ -1,6 +1,9 @@
 package lmx.phone.domain;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * The records of payment.
@@ -10,6 +13,9 @@ import java.util.Date;
  *
  */
 public class Phone {
+	
+	private final static SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+	
 	private String id;
 	/**
 	 * this is just a name, nothing more.
@@ -23,6 +29,11 @@ public class Phone {
 		this.id = id;
 		this.user = user;
 		this.payment = Integer.valueOf(payment);
+		try {
+			this.timestamp = sdf.parse(timestamp);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public Phone(String id, String user, int payment, Date timestamp)  {

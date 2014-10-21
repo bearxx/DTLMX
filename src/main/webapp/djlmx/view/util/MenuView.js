@@ -28,6 +28,12 @@ Ext.define('djlmx.view.util.MenuView', {
 	                    iconCls : 'navigator-rank-history',
 	                    qtitle : 'phoneView',
 	                    leaf : true
+	                },{
+	                    text : '全部记录',
+	                    id : 'recordView',
+	                    iconCls : 'navigator-rank-history',
+	                    qtitle : 'recordView',
+	                    leaf : true
 	                } ]
 	            }
 	        }

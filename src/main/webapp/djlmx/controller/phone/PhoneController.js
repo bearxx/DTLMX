@@ -1,7 +1,7 @@
 Ext.define('djlmx.controller.phone.PhoneController', {
   extend : 'Ext.app.Controller',
   views : [ 'phone.PhoneView'],
-  idWorking : false,
+  isWorking : false,
   init : function() {
     this.control({
         'phoneView': {
@@ -58,7 +58,9 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 			  }
 		  },
 		  failure : function() {
-			  me.waitForRes(btn);
+			  if(me.isWorking) {
+				  me.waitForRes(btn);
+			  }
 		  }
 	  });
   },
@@ -115,5 +117,5 @@ Ext.define('djlmx.controller.phone.PhoneController', {
 			  }
 		  }
 	  });
-  },
+  }
 });

@@ -13,7 +13,7 @@ Ext.override(Ext.form.Field, {
     }
 });
 Ext.application({
-    requires: [ 'Ext.container.Viewport' ],
+    requires: [ 'Ext.container.Viewport'],
     name: 'djlmx',
     appFolder: 'djlmx',
     launch: function () {
@@ -50,6 +50,7 @@ Ext.application({
     controllers: ['util.TopBarController',
                   'util.TabController','home.HomeController',
                   'util.MenuController',
-                  'phone.PhoneController'
+                  'phone.PhoneController',
+                  'phone.RecordController'
                   ]
 });
